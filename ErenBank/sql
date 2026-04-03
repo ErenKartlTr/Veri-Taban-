@@ -1,52 +1,52 @@
--- 1. ZİNCİRLEME TEMİZLİK (Bağımlı tablolarla birlikte siler)
--- CASCADE komutu, users'a bağlı olan accounts gibi tabloları da otomatik temizler.
-DROP TABLE IF EXISTS musteriler CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS hesap_turleri CASCADE;
-DROP TABLE IF EXISTS accounts CASCADE; 
-DROP TABLE IF EXISTS transactions CASCADE;
+-- 1. ZİNCİRLEME TEMİZLİK: Eğer tablolar varsa siler, 'CASCADE' ile onlara bağlı verileri de temizler.
+DROP TABLE IF EXISTS musteriler CASCADE; -- Müşteriler tablosunu siler.
+DROP TABLE IF EXISTS users CASCADE;      -- Kullanıcılar tablosunu siler.
+DROP TABLE IF EXISTS hesap_turleri CASCADE; -- Hesap türleri tablosunu siler.
+DROP TABLE IF EXISTS accounts CASCADE;   -- Hesaplar tablosunu siler.
+DROP TABLE IF EXISTS transactions CASCADE; -- İşlemler (transfer vb.) tablosunu siler.
 
--- 2. HESAP TÜRLERİ TABLOSU
+-- 2. HESAP TÜRLERİ TABLOSU: Bankadaki hesap kategorilerini (Dolar, Altın vb.) tanımlar.
 CREATE TABLE hesap_turleri (
-    tur_id SERIAL PRIMARY KEY,
-    tur_adi VARCHAR(50) NOT NULL
+    tur_id SERIAL PRIMARY KEY, -- Otomatik artan benzersiz kimlik numarası (1, 2, 3...)
+    tur_adi VARCHAR(50) NOT NULL -- Türün ismi (Örn: Dolar Hesabı), boş bırakılamaz.
 );
 
+-- Başlangıç verilerini ekliyoruz.
 INSERT INTO hesap_turleri (tur_id, tur_adi) VALUES 
 (1, 'Vadesiz TL Hesabı'), 
 (2, 'Vadeli Mevduat Hesabı'), 
 (3, 'Dolar (USD) Hesabı'), 
 (5, 'Altın (XAU) Hesabı');
 
--- 3. USERS TABLOSU
+-- 3. USERS TABLOSU: Sisteme giriş yapacak ana kullanıcı bilgilerini tutar.
 CREATE TABLE users (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    first_name VARCHAR(50) NOT NULL,
-    last_name VARCHAR(50) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Tahmin edilemez, rastgele karmaşık bir ID üretir.
+    first_name VARCHAR(50) NOT NULL, -- Kullanıcının adı.
+    last_name VARCHAR(50) NOT NULL,  -- Kullanıcının soyadı.
+    email VARCHAR(100) UNIQUE NOT NULL, -- E-posta (UNIQUE: Aynı e-posta iki kez kayıt edilemez).
+    password TEXT NOT NULL, -- Şifre verisi (Genelde hash'lenmiş halde saklanır).
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) -- Kayıt anındaki dünya saatini otomatik yazar.
 );
 
--- 4. MÜŞTERİLER TABLOSU
+-- 4. MÜŞTERİLER TABLOSU: Bankacılık işlemlerini yapacak olan müşteri profillerini tutar.
 CREATE TABLE musteriler (
-    musteri_id SERIAL PRIMARY KEY,
-    ad VARCHAR(50) NOT NULL,
-    soyad VARCHAR(50) NOT NULL,
-    tur_id INT REFERENCES hesap_turleri(tur_id),
-    kayit_tarihi TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+    musteri_id SERIAL PRIMARY KEY, -- Müşterinin sıra numarası.
+    ad VARCHAR(50) NOT NULL, -- Müşteri adı.
+    soyad VARCHAR(50) NOT NULL, -- Müşteri soyadı.
+    tur_id INT REFERENCES hesap_turleri(tur_id), -- YABANCI ANAHTAR: Sadece 'hesap_turleri'nde olan türleri kabul eder.
+    kayit_tarihi TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) -- Müşterinin sisteme kayıt edildiği tarih.
 );
 
--- 5. GÜVENLİK (RLS) VE POLİTİKALAR
-ALTER TABLE hesap_turleri ENABLE ROW LEVEL SECURITY;
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE musteriler ENABLE ROW LEVEL SECURITY;
+-- 5. GÜVENLİK (RLS): Veritabanı seviyesinde erişim kısıtlamalarını devreye sokar.
+ALTER TABLE hesap_turleri ENABLE ROW LEVEL SECURITY; -- Bu tabloya izinsiz erişimi kapatır.
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;         -- Bu tabloya izinsiz erişimi kapatır.
+ALTER TABLE musteriler ENABLE ROW LEVEL SECURITY;    -- Bu tabloya izinsiz erişimi kapatır.
 
--- Herkese INSERT izni (Kayıt için şart)
+-- Herkese INSERT izni (Yeni kayıt oluşturabilmek için dışarıdan veri eklemeye izin verir).
 CREATE POLICY "Allow public insert on users" ON users FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public insert on musteriler" ON musteriler FOR INSERT WITH CHECK (true);
 
--- Herkese SELECT izni (Verileri okumak için)
+-- Herkese SELECT izni (Uygulama üzerinden verileri okuyup listeleyebilmek için izin verir).
 CREATE POLICY "Allow public select on hesap_turleri" ON hesap_turleri FOR SELECT USING (true);
 CREATE POLICY "Allow public select on users" ON users FOR SELECT USING (true);
 CREATE POLICY "Allow public select on musteriler" ON musteriler FOR SELECT USING (true);
