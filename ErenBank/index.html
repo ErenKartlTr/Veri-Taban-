@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErenBank | Yeni Müşteri Kaydı</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="bank-card">
+        <div class="header">
+            <h1>Eren<span>Bank</span></h1>
+            <p>Müşteri Kayıt Terminali</p>
+        </div>
+
+        <form id="register-form">
+            <div class="row">
+                <div class="input-group">
+                    <label>Ad</label>
+                    <input type="text" id="reg-name" placeholder="Eren" required>
+                </div>
+                <div class="input-group">
+                    <label>Soyad</label>
+                    <input type="text" id="reg-surname" placeholder="Banker" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>E-posta</label>
+                <input type="email" id="reg-email" placeholder="ornek@mail.com" required>
+            </div>
+
+            <div class="input-group">
+                <label>Şifre</label>
+                <input type="password" id="reg-password" placeholder="••••••••" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Hesap Türü</label>
+                <select id="reg-type">
+                    <option value="1">Vadesiz TL Hesabı</option>
+                    <option value="2">Vadeli Mevduat</option>
+                    <option value="3">Dolar (USD) Hesabı</option>
+                    <option value="5">Altın (XAU) Hesabı</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-success">Kaydı Tamamla</button>
+        </form>
+
+        <div id="status-msg"></div>
+    </div>
+
+    <!-- Scriptler -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
