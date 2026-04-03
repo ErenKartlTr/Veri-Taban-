@@ -1,0 +1,52 @@
+-- 1. ZİNCİRLEME TEMİZLİK (Bağımlı tablolarla birlikte siler)
+-- CASCADE komutu, users'a bağlı olan accounts gibi tabloları da otomatik temizler.
+DROP TABLE IF EXISTS musteriler CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS hesap_turleri CASCADE;
+DROP TABLE IF EXISTS accounts CASCADE; -- Hata veren tablo buydu, bunu da listeye ekledik.
+DROP TABLE IF EXISTS transactions CASCADE; -- Varsa bunu da temizleyelim.
+
+-- 2. HESAP TÜRLERİ TABLOSU
+CREATE TABLE hesap_turleri (
+    tur_id SERIAL PRIMARY KEY,
+    tur_adi VARCHAR(50) NOT NULL
+);
+
+INSERT INTO hesap_turleri (tur_id, tur_adi) VALUES 
+(1, 'Vadesiz TL Hesabı'), 
+(2, 'Vadeli Mevduat Hesabı'), 
+(3, 'Dolar (USD) Hesabı'), 
+(5, 'Altın (XAU) Hesabı');
+
+-- 3. USERS TABLOSU
+CREATE TABLE users (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+-- 4. MÜŞTERİLER TABLOSU
+CREATE TABLE musteriler (
+    musteri_id SERIAL PRIMARY KEY,
+    ad VARCHAR(50) NOT NULL,
+    soyad VARCHAR(50) NOT NULL,
+    tur_id INT REFERENCES hesap_turleri(tur_id),
+    kayit_tarihi TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+-- 5. GÜVENLİK (RLS) VE POLİTİKALAR
+ALTER TABLE hesap_turleri ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE musteriler ENABLE ROW LEVEL SECURITY;
+
+-- Herkese INSERT izni (Kayıt için şart)
+CREATE POLICY "Allow public insert on users" ON users FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public insert on musteriler" ON musteriler FOR INSERT WITH CHECK (true);
+
+-- Herkese SELECT izni (Verileri okumak için)
+CREATE POLICY "Allow public select on hesap_turleri" ON hesap_turleri FOR SELECT USING (true);
+CREATE POLICY "Allow public select on users" ON users FOR SELECT USING (true);
+CREATE POLICY "Allow public select on musteriler" ON musteriler FOR SELECT USING (true);
