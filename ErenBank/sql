@@ -3,8 +3,8 @@
 DROP TABLE IF EXISTS musteriler CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS hesap_turleri CASCADE;
-DROP TABLE IF EXISTS accounts CASCADE; -- Hata veren tablo buydu, bunu da listeye ekledik.
-DROP TABLE IF EXISTS transactions CASCADE; -- Varsa bunu da temizleyelim.
+DROP TABLE IF EXISTS accounts CASCADE; 
+DROP TABLE IF EXISTS transactions CASCADE;
 
 -- 2. HESAP TÜRLERİ TABLOSU
 CREATE TABLE hesap_turleri (
